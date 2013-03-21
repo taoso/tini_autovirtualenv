@@ -1,0 +1,6 @@
+#
+# ~/.bash_profile
+#
+
+# tmux use .bash_profile
+[[ -f ~/.bashrc ]] && . ~/.bashrc
