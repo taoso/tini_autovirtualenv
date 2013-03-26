@@ -13,31 +13,42 @@ PS1='[\u@\h \W]\$ '
 VIRTUALENV_BASE_PATH=/home/jlyu/Workspace/py/venv
 
 active_virtualenv () {
-    # only find .env file can we active the virtualenv
-    if [[ -f .env ]]; then
-        if [[ -z $VIRTUALENV ]]; then
+    if [[ ! -z $VIRTUALENV_PATH ]]; then
+        # if we are not in the workspace or it's subdir
+        if [[ "${PWD##${VIRTUALENV_PATH}}" == "$PWD" ]]; then
+            unset VIRTUALENV_PATH
+            deactivate
+        else
+            find_and_enable_virtualenv
+        fi
+    else
+        find_and_enable_virtualenv
+    fi
+}
+
+function find_and_enable_virtualenv() {
+    p=`pwd`
+    # check all the parent dirs(including the pwd)
+    while [[ "$p" != "/" ]]; do
+        env_path=$p/.env
+        # only find .env file can we active the virtualenv
+        if [[ -f $env_path ]]; then
             # just store the virtualenv name in the .env file
-            env=`head -n 1 .env`
+            # the env name should be in the first line and started with '#'
+            env=`head -n 1 $env_path|grep -e "^#"|sed -E 's/^#//'`
             if [[ ! -z $env ]]; then
                 active_path="$VIRTUALENV_BASE_PATH/$env/bin/activate"
                 # the virtualenv does exist
                 if [[ -f "$active_path" ]]; then
                     source "$active_path"
-                    export VIRTUALENV=1
                     export VIRTUALENV_PATH=`pwd`
                 fi
+                break
             fi
         fi
-    else
-        if [[ ! -z $VIRTUALENV ]] && [[ ! -z $VIRTUALENV_PATH ]]; then
-            # if we are not in the workspace or it's subdir
-            if [[ "${PWD##${VIRTUALENV_PATH}}" == "$PWD" ]]; then
-                unset VIRTUALENV
-                unset VIRTUALENV_PATH
-                deactivate
-            fi
-        fi
-    fi 
+
+        p=`dirname "$p"`
+    done
 }
 
 active_virtualenv
