@@ -41,7 +41,7 @@ function find_and_enable_virtualenv() {
                 # the virtualenv does exist
                 if [[ -f "$active_path" ]]; then
                     source "$active_path"
-                    export VIRTUALENV_PATH=`pwd`
+                    export VIRTUALENV_PATH=$p
                 fi
                 break
             fi
